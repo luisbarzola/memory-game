@@ -18,24 +18,36 @@ var ImgSource = [
   "http://img9.uploadhouse.com/fileuploads/17699/176992554c2ca340cc2ea8c0606ecd320824756e.png"
 ];
 
+/**
+ * Devuelve un número de entre el mínimo y máximo valor ingresado
+ *
+ * @param MaxValue
+ * @param MinValue
+ * @returns {number}
+ */
 function RandomFunction(MaxValue, MinValue) {
-		return Math.round(Math.random() * (MaxValue - MinValue) + MinValue);
-	}
-	
+	return Math.round(Math.random() * (MaxValue - MinValue) + MinValue);
+}
+
+/**
+ * Agarra las imágenes de cada caja y las mezcla.
+ */
 function ShuffleImages() {
 	var ImgAll = $(Source).children();
 	var ImgThis = $(Source + " div:first-child");
 	var ImgArr = new Array();
 
+    // obtiene toda las imágenes
 	for (var i = 0; i < ImgAll.length; i++) {
 		ImgArr[i] = $("#" + ImgThis.attr("id") + " img").attr("src");
 		ImgThis = ImgThis.next();
 	}
 	
-		ImgThis = $(Source + " div:first-child");
-	
+    ImgThis = $(Source + " div:first-child");
+
+    // re organiza las imágenes
 	for (var z = 0; z < ImgAll.length; z++) {
-	var RandomNumber = RandomFunction(0, ImgArr.length - 1);
+	    var RandomNumber = RandomFunction(0, ImgArr.length - 1);
 
 		$("#" + ImgThis.attr("id") + " img").attr("src", ImgArr[RandomNumber]);
 		ImgArr.splice(RandomNumber, 1);
@@ -43,6 +55,16 @@ function ShuffleImages() {
 	}
 }
 
+/**
+ * Reinicia el juego
+ *
+ *  Re organiza las imágenes del tablero.
+ *  Oculta todas las imágenes
+ *  Vuelve el contador a 0
+ *  Inicializa las variables de entorno.
+ *
+ * @returns {boolean}
+ */
 function ResetGame() {
 	ShuffleImages();
 	$(Source + " div img").hide();
@@ -56,23 +78,37 @@ function ResetGame() {
 	return false;
 }
 
+/**
+ * Abre la imagen desde donde se ejecuta la función.
+ */
 function OpenCard() {
 	var id = $(this).attr("id");
 
+    // si está oculta la imagen
 	if ($("#" + id + " img").is(":hidden")) {
+        // quita la funcionalidad OpenCard a la caja actual
 		$(Source + " div").unbind("click", OpenCard);
-	
+
+        // muestra la imagen de la caja actual
 		$("#" + id + " img").slideDown('fast');
 
+        // si no había una caja abierta
 		if (ImgOpened == "") {
+            // guarda el id de la caja actual
 			BoxOpened = id;
+            // setea la ruta de la imagen actual como imagen abierta
 			ImgOpened = $("#" + id + " img").attr("src");
+
 			setTimeout(function() {
 				$(Source + " div").bind("click", OpenCard)
 			}, 300);
 		} else {
+            // si había una caja abierta
 			CurrentOpened = $("#" + id + " img").attr("src");
+
+            // si la imagen de la caja actual es distinta a la última abierta
 			if (ImgOpened != CurrentOpened) {
+                // oculta las dos cajas y limpia la caja y la imagen abierta
 				setTimeout(function() {
 					$("#" + id + " img").slideUp('fast');
 					$("#" + BoxOpened + " img").slideUp('fast');
@@ -82,6 +118,9 @@ function OpenCard() {
 			} else {
 //				$("#" + id + " img").parent().css("visibility", "hidden");
 //				$("#" + BoxOpened + " img").parent().css("visibility", "hidden");
+
+                // mantiene abierta la caja y incrementa la variable imágenes
+                // halladas
 				ImgFound++;
 				BoxOpened = "";
 				ImgOpened = "";
@@ -90,9 +129,12 @@ function OpenCard() {
 				$(Source + " div").bind("click", OpenCard)
 			}, 400);
 		}
+
+        // aumenta y actualiza la cantidad de clicks que se hizo
 		Counter++;
 		$("#counter").html("" + Counter);
 
+        // si se hallaron todas las imágenes, agrega un mensaje.
 		if (ImgFound == ImgSource.length) {
 			$("#counter").prepend('<span id="success">You Found All Pictues With </span>');
 		}
@@ -100,12 +142,18 @@ function OpenCard() {
 }
 
 $(function() {
+    // crea las cajas con las imágenes de ImgSources
+    // da dos vueltas por cada imagen.
+    for (var y = 1; y < 3 ; y++) {
+        $.each(ImgSource, function(i, val) {
+            $(Source).append("<div id=card" + y + i + "><img src=" + val + " />");
+        });
+    }
 
-for (var y = 1; y < 3 ; y++) {
-	$.each(ImgSource, function(i, val) {
-		$(Source).append("<div id=card" + y + i + "><img src=" + val + " />");
-	});
-}
+    // bindea la funcionalidad click  para cada caja con imágenes para que se
+    // ejecute  la función OpenCard
 	$(Source + " div").click(OpenCard);
+
+    // mezcla todas las imágenes recién creadas.
 	ShuffleImages();
 });
